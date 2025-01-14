@@ -1,8 +1,7 @@
 import { useState } from "react";
 import GridLayout from "./components/GridLayout";
 import { Position } from "./types";
-
-const directions: string[] = ["N", "E", "S", "W"];
+import { rotateRight, rotateLeft, moveForward } from "./utils";
 
 function App() {
   const [command, setCommand] = useState<string>("");
@@ -12,37 +11,24 @@ function App() {
     setCommand("");
   };
 
-  const rotateRight = () => {
-    setRobot((prevRobot) => {
-      let { direction } = prevRobot;
-      direction = directions[(directions.indexOf(direction) + 1) % 4];
-      return { ...prevRobot, direction };
-    });
+  const handleRoatetRight = () => {
+    setRobot((prevRobot) => ({
+      ...prevRobot,
+      direction: rotateRight(prevRobot.direction),
+    }));
   };
 
-  const rotateLeft = () => {
-    setRobot((prevRobot) => {
-      let { direction } = prevRobot;
-      direction = directions[(directions.indexOf(direction) + 3) % 4];
-      return { ...prevRobot, direction };
-    });
+  const handleRotateLeft = () => {
+    setRobot((prevRobot) => ({
+      ...prevRobot,
+      direction: rotateLeft(prevRobot.direction),
+    }));
   };
 
-  const moveForward = () => {
+  const handleMoveForward = () => {
     setRobot((prevRobot) => {
-      let { x, y, direction } = prevRobot;
-      if (direction === "N" && y < 4) {
-        y++;
-      } else if (direction === "E" && x < 4) {
-        x++;
-      } else if (direction === "S" && y > 0) {
-        y--;
-      } else if (direction === "W" && x > 0) {
-        x--;
-      } else {
-        console.log("the robot will fall");
-      }
-      return { x, y, direction };
+      const { x, y, direction } = prevRobot;
+      return moveForward(x, y, direction);
     });
   };
 
@@ -51,13 +37,13 @@ function App() {
       await new Promise((resolve) => setTimeout(resolve, 500));
       switch (char) {
         case "R":
-          rotateRight();
+          handleRoatetRight();
           break;
         case "L":
-          rotateLeft();
+          handleRotateLeft();
           break;
         case "F":
-          moveForward();
+          handleMoveForward();
           break;
         default:
           console.log(`${char} is not a valid command`);
@@ -68,6 +54,7 @@ function App() {
   return (
     <div className="grid justify-items-center p-4 gap-y-4">
       <input
+        type="text"
         value={command}
         onChange={(e) => setCommand(e.target.value)}
         className="h-20 w-[50%] border-2 border-black rounded px-2 text-[20px]"
@@ -78,9 +65,12 @@ function App() {
       >
         Start Simulation
       </button>
-      <button onClick={handleClear}
-      className="h-20 w-40 border-2 border-black rounded-xl"
-      >Clear</button>
+      <button
+        onClick={handleClear}
+        className="h-20 w-40 border-2 border-black rounded-xl"
+      >
+        Clear
+      </button>
       <GridLayout robot={robot} />
     </div>
   );
